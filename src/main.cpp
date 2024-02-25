@@ -10,13 +10,27 @@ const unsigned int remotePort = 25068;
 
 // 定义模拟输入引脚
 const uint8_t ThrottleButton = 39; 
-const uint8_t HorizenDirectionButton = 36; 
-const uint8_t DirectionButton2 = 34; 
-const uint8_t DirectionButton3 = 35; 
+const uint8_t HorizenDirectionButtonL = 36; 
+const uint8_t VerticalDirectionButton = 34; 
+const uint8_t HorizenDirectionButtonR = 35; 
 
-int16_t ThrottleValue = 0;
+int16_t lastThrottleValue = 0;
+int16_t lastHorizenDirectionValueL = 0;
+int16_t lastVerticalDirectionValue = 0;
+int16_t lastHorizenDirectionValueR = 0;
+int16_t lastCtrlValue = 0;
 
-bool onlyRevToSend = true;
+const uint8_t ThrottleButtonSign = 0xA0;
+const uint8_t HorizenDirectionButtonLSign = 0xA1;
+const uint8_t VerticalDirectionButtonSign = 0xA2;
+const uint8_t HorizenDirectionButtonRSign = 0xA3;
+
+uint8_t SendData[6]={0xAA,0x00,0x00,0x00,0xFF,0xFF};
+
+bool onlyRevToSendThrottle = true;
+bool onlyRevToSendHorizenDirectionL = true;
+bool onlyRevToSendVerticalDirection = true;
+bool onlyRevToSendHorizenDirectionR = true;
 
 WiFiUDP udp;
 
@@ -43,6 +57,112 @@ void setup()
   Serial.write(_ip.c_str());
 }
 
+bool ThrottleButtonFunc(){
+  int16_t _ThrottleValue = analogRead(ThrottleButton);
+  if(abs(_ThrottleValue-lastThrottleValue)>20||
+  (_ThrottleValue==0&&_ThrottleValue!=lastThrottleValue)||
+  (_ThrottleValue==0x0FFF&&_ThrottleValue!=lastThrottleValue))
+  {
+    // 开始一个UDP包
+    if(udp.beginPacket(remoteIp, remotePort)==0){
+      return false;
+    }
+    SendData[1] = 0xA0;
+    SendData[2] = (_ThrottleValue >> 8) & 0xFF; // 右移8位得到高位
+    SendData[3] = _ThrottleValue & 0xFF; // 与0xFF进行位与运算得到低位
+    udp.write(SendData,sizeof(SendData));
+    // 结束并发送UDP包
+    if(udp.endPacket()==0){
+      delay(1000);
+      return false;
+    }
+    else{
+      lastThrottleValue = _ThrottleValue;
+      return true;
+    }}
+  else{}
+  return false;
+}
+bool HorizenDirectionButtonLFunc(){
+int16_t _HorizenDirectionLValue = analogRead(HorizenDirectionButtonL);
+  if(abs(_HorizenDirectionLValue-lastHorizenDirectionValueL)>20||
+  (_HorizenDirectionLValue==0&&_HorizenDirectionLValue!=lastHorizenDirectionValueL)||
+  (_HorizenDirectionLValue==0x0FFF&&_HorizenDirectionLValue!=lastHorizenDirectionValueL))
+  {
+    // 开始一个UDP包
+    if(udp.beginPacket(remoteIp, remotePort)==0){
+      return false;
+    }
+    SendData[1] = 0xA1;
+    SendData[2] = (_HorizenDirectionLValue >> 8) & 0xFF; // 右移8位得到高位
+    SendData[3] = _HorizenDirectionLValue & 0xFF; // 与0xFF进行位与运算得到低位
+    udp.write(SendData,sizeof(SendData));
+    // 结束并发送UDP包
+    if(udp.endPacket()==0){
+      delay(1000);
+      return false;
+    }
+    else{
+      lastHorizenDirectionValueL = _HorizenDirectionLValue;
+      return true;
+    }}
+  else{}
+  return false;
+}
+bool VerticalDirectionButtonFunc(){
+int16_t _VerticalDirectionValue = analogRead(VerticalDirectionButton);
+  if(abs(_VerticalDirectionValue-lastVerticalDirectionValue)>20||
+  (_VerticalDirectionValue==0&&_VerticalDirectionValue!=lastVerticalDirectionValue)||
+  (_VerticalDirectionValue==0x0FFF&&_VerticalDirectionValue!=lastVerticalDirectionValue))
+  {
+    // 开始一个UDP包
+    if(udp.beginPacket(remoteIp, remotePort)==0){
+      return false;
+    }
+    SendData[1] = 0xA2;
+    SendData[2] = (_VerticalDirectionValue >> 8) & 0xFF; // 右移8位得到高位
+    SendData[3] = _VerticalDirectionValue & 0xFF; // 与0xFF进行位与运算得到低位
+    udp.write(SendData,sizeof(SendData));
+    // 结束并发送UDP包
+    if(udp.endPacket()==0){
+      delay(1000);
+      return false;
+    }
+    else{
+      lastVerticalDirectionValue = _VerticalDirectionValue;
+      return true;
+    }}
+  else{
+  }
+  return false;
+}
+bool HorizenDirectionButtonRFunc(){
+  int16_t _HorizenDirectionRValue = analogRead(HorizenDirectionButtonR);
+  if(abs(_HorizenDirectionRValue-lastHorizenDirectionValueR)>20||
+  (_HorizenDirectionRValue==0&&_HorizenDirectionRValue!=lastHorizenDirectionValueR)||
+  (_HorizenDirectionRValue==0x0FFF&&_HorizenDirectionRValue!=lastHorizenDirectionValueR))
+  {
+    // 开始一个UDP包
+    if(udp.beginPacket(remoteIp, remotePort)==0){
+      return false;
+    }
+    SendData[1] = 0xA3;
+    SendData[2] = (_HorizenDirectionRValue >> 8) & 0xFF; // 右移8位得到高位
+    SendData[3] = _HorizenDirectionRValue & 0xFF; // 与0xFF进行位与运算得到低位
+    udp.write(SendData,sizeof(SendData));
+    // 结束并发送UDP包
+    if(udp.endPacket()==0){
+      delay(1000);
+      return false;
+    }
+    else{
+      lastHorizenDirectionValueR = _HorizenDirectionRValue;
+      return true;
+    }}
+  else{}
+  return false;
+};
+
 void loop(){
   // 检测是否有设备连接到当前的热点
   int connectedDevices = WiFi.softAPgetStationNum();
@@ -54,8 +174,6 @@ void loop(){
     delay(1000);
     return;
   }
-
-  char buffer[255];
   int packetSize = udp.parsePacket();
   if (packetSize) {
     char incomingPacket[255];
@@ -67,29 +185,62 @@ void loop(){
     Serial.printf("UDP packet contents: %s\n", incomingPacket);
   }
 
-  // 开始一个UDP包
-  udp.beginPacket(remoteIp, remotePort);
-
-  // 读取模拟输入A0
-  int16_t analogValue = analogRead(ThrottleButton);
-
-  int16_t high = (analogValue >> 8) & 0xFF; // 右移8位得到高位
-  int16_t low = analogValue & 0xFF; // 与0xFF进行位与运算得到低位
-
-  // 将模拟输入的值转换为字符串
-  //sprintf(buffer,"%d %d %d %d %d %d",0xA1,0xA2,high,low,0xFF,0xFF);
-  //udp.println(buffer);
-
-  int16_t _buffer[6]={0xA1,0xA2,high,low,0xFF,0xFF};
-
-  
-
-  // 结束并发送UDP包
-  if(udp.endPacket()==0)
+  if(onlyRevToSendThrottle)
   {
-    delay(1000);
+    if(ThrottleButtonFunc())
+    {
+      //onlyRevToSendThrottle=false;
+    }
+  }
+  else{
+    Serial.println("油门数据发送失败");
+  }
+  if(onlyRevToSendHorizenDirectionL)
+  {
+    if(HorizenDirectionButtonLFunc())
+    {
+      //onlyRevToSendHorizenDirectionL=false;
+    }
+  }else{
+    Serial.println("左方向数据发送失败");
+  }
+  if(onlyRevToSendVerticalDirection)
+  {
+    if(VerticalDirectionButtonFunc())
+    {
+      //onlyRevToSendVerticalDirection=false;
+    }
+  }
+  else{
+    Serial.println("右垂直方向数据发送失败");
+  }
+  if(onlyRevToSendHorizenDirectionR)
+  {
+    if(HorizenDirectionButtonRFunc())
+    {
+      //onlyRevToSendHorizenDirectionR=false;
+    }
+  }
+  else{
+    Serial.println("右水平方向数据发送失败");
   }
 
+  int16_t _CtrlValue = analogRead(32);
+  if()
+  if(_CtrlValue<450)
+  {
+    Serial.println(_CtrlValue);
+  }
+  else if(_CtrlValue>3800){
+    Serial.println(_CtrlValue);
+  }
+  else if(_CtrlValue<3800&&_CtrlValue>2300)
+  {
+    Serial.println(_CtrlValue);
+  }
+
+  lastCtrlValue = _CtrlValue;
+  
   // 减少CPU的使用
   delay(10);
 }
