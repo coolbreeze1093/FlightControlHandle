@@ -30,6 +30,7 @@ public:
     double getChannelValue_1();
     double getChannelValue_2();
     double getChannelValue_3();
+    double getChannelValue_4();
 
     void initChannleValue();
 
@@ -50,5 +51,6 @@ private:
 
     double m_channleValue_1=0;//L
     double m_channleValue_2=0;//L
-    double m_channleValue_3=0;//R
+    double m_channleValue_3=0;//L
+    double m_channleValue_4=0;//R
 };

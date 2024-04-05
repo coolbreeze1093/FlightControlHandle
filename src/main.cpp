@@ -1,136 +1,82 @@
+
 #include <Arduino.h>
-#include <WiFi.h>
-#include <WiFiUdp.h>
-#include "CalChannelValue.h"
-#include "GetCtrlValue.h"
-#include "ArduinoJson.h"
+#include "EspNewMan.h"
+#include "sbc.h"
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
-const char* ssid = "ESP32_Udp_wzs";
-const char* password = "ssdwifi66";
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
-const IPAddress remoteIp(10, 0, 0, 68);
-const unsigned int remotePort = 25068;
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+// The pins for I2C are defined by the Wire-library. 
+// On an arduino UNO:       A4(SDA), A5(SCL)
+// On an arduino MEGA 2560: 20(SDA), 21(SCL)
+// On an arduino LEONARDO:   2(SDA),  3(SCL), ...
+#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+#define SCREEN_ADDRESS 0x3D ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-WiFiUDP udp;
-CalChannelValue calV;
-GetCtrlValue getV;
-bool OnlyDebugOnceInitValue=true;
+#define NUMFLAKES     10 // Number of snowflakes in the animation example
 
+#define LOGO_HEIGHT   16
+#define LOGO_WIDTH    16
+static const unsigned char PROGMEM logo_bmp[] =
+{ 0b00000000, 0b11000000,
+  0b00000001, 0b11000000,
+  0b00000001, 0b11000000,
+  0b00000011, 0b11100000,
+  0b11110011, 0b11100000,
+  0b11111110, 0b11111000,
+  0b01111110, 0b11111111,
+  0b00110011, 0b10011111,
+  0b00011111, 0b11111100,
+  0b00001101, 0b01110000,
+  0b00011011, 0b10100000,
+  0b00111111, 0b11100000,
+  0b00111111, 0b11110000,
+  0b01111100, 0b11110000,
+  0b01110000, 0b01110000,
+  0b00000000, 0b00110000 };
+
+
+
+//C0:49:EF:B4:3A:30
+SbcInterface *m_sbc = new sbc;
+BeeperCtrl m_beeperCtrl;
 void setup()
 {
   Serial.begin(115200);
-  
-  IPAddress localIP;localIP.fromString("10.0.0.66");
-  IPAddress gateway;gateway.fromString("10.0.0.1");
-  IPAddress ipMask;ipMask.fromString("255.255.255.0");
-  //IPAddress dhcp;dhcp.fromString("10.0.0.100");
-  WiFi.softAPConfig(localIP,gateway,ipMask/*,dhcp*/);
-  WiFi.softAP(ssid, password);
+  m_beeperCtrl.start();
+  m_sbc->setChannel(0);
+  m_sbc->setEncrypt(false);
+  uint8_t peerAddr[]={0xE4,0x65,0xB8,0x48,0xDE,0x24};
+  m_sbc->setMacAddr(peerAddr);
+  m_sbc->setBeeper(&m_beeperCtrl);
 
-  udp.begin(25066);
-
-  IPAddress _localIp = WiFi.softAPIP();
-  String _ip = _localIp.toString();
-  Serial.write(_ip.c_str());
-
-
-}
-
-void outInitValue()
-{
-  if(OnlyDebugOnceInitValue)
+  if(EspNewMan_H.init())
   {
-    for(auto var:calV.getInitValue())
+    if(EspNewMan_H.creatPeer(m_sbc))
     {
-      Serial.print(var.first.c_str());
-      Serial.print("min:");
-      Serial.print(var.second.min);
-      Serial.print("init:");
-      Serial.print(var.second.init);
-      Serial.print("max:");
-      Serial.print(var.second.max);
-      Serial.println(" ");
+      Serial.println("success EspNewMan_H init");
     }
-    OnlyDebugOnceInitValue = false;
   }
+
+
+  
   
 }
 
 void loop(){
-  // 检测是否有设备连接到当前的热点
-  int connectedDevices = WiFi.softAPgetStationNum();
-  if(connectedDevices <= 0) {
-    Serial.print("有 ");
-    Serial.print(connectedDevices);
-    Serial.println(" 个设备连接到当前的热点");
-    // 减少CPU的使用
-    delay(1000);
-    return;
-  }
-  
-  int packetSize = udp.parsePacket();
-  if (packetSize) {
-    char incomingPacket[255];
-    int len = udp.read(incomingPacket, 255);
-    if (len > 0) {
-      incomingPacket[len] = 0;
-    }
 
-    Serial.printf("UDP packet contents: %s\n", incomingPacket);
-  }
+  int16_t _volatile = analogReadMilliVolts(33);
   JsonDocument doc;
-  GetCtrlValue::CtrlType _cType = getV.CtrlValue();
-  
-  std::string _status="";
-  switch (_cType)
-  {
-  case GetCtrlValue::CtrlType::close:
-    outInitValue();
-    _status="close";
-    calV.quitInit();
-    delay(1000);
-    calV.initChannleValue();
-    doc["status"] = _status;
-    doc["channel1"] = calV.getChannelValue_1();
-    doc["channel2"] = calV.getChannelValue_2();
-    doc["channel3"] = calV.getChannelValue_3();
-  break;
-  case GetCtrlValue::CtrlType::open:
-    {
-      calV.freshCtrlValue(getV.ThrottleValue(),getV.HorizenDirectionValueL(),getV.VerticalDirectionValue(),getV.HorizenDirectionValueR());
-      _status="open";
-      doc["status"] = _status;
-      doc["channel1"] = calV.getChannelValue_1();
-      doc["channel2"] = calV.getChannelValue_2();
-      doc["channel3"] = calV.getChannelValue_3();
-    }
-  break;
-  case GetCtrlValue::CtrlType::init:
-    {
-      OnlyDebugOnceInitValue=true;
-      calV.initCtrlValue(getV.ThrottleInitValue(),getV.HorizenDirectionInitValueL(),getV.VerticalDirectionInitValue(),getV.HorizenDirectionInitValueR());
-      _status="init";
-    }
-  break;
-  default:
-    _status="error";
-    break;
-  }
-  // Add an array
-  //JsonArray data = doc["data"].to<JsonArray>();
-  //data.add(48.756080);
-  //data.add(2.302038);
+  Serial.println(_volatile);
+  doc["volatile"]=_volatile;
+  String json;
+  serializeJson(doc, json);
+  EspNewMan_H.send(m_sbc->getMacAddr(), (uint8_t *)json.c_str(), json.length());
 
-  if(udp.beginPacket(remoteIp, remotePort)==0){
-    delay(1000);
-    return;
-  }
-  serializeJson(doc, udp);
-  udp.println();
-  if(udp.endPacket()==0){
-      delay(1000);
-      return;
-  }
-  
-  delay(15);
+  m_sbc->run();
+  delay(10);
 }
