@@ -1,6 +1,7 @@
 #include "EspNewMan.h"
 #include "ArduinoJson.h"
 
+
 EspNewMan EspNewMan::m_self;
 SbcInterface *EspNewMan::m_sbc = nullptr;
 EspNewMan::EspNewMan(/* args */)
@@ -15,6 +16,7 @@ bool EspNewMan::init()
 {
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
+    WiFi.setTxPower(wifi_power_t::WIFI_POWER_19_5dBm);
     //  初始化ESP-NOW
     if (esp_now_init() != ESP_OK)
     {

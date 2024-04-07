@@ -10,7 +10,8 @@ class BeeperCtrl
 public:
     struct BeeperConfig
     {
-        int internal = 0;
+        int playInternal = 0;
+        int stopInternal = 0;
         int nums = 0;
     };
 

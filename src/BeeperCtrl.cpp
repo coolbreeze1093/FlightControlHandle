@@ -17,9 +17,9 @@ void BeeperCtrl::run()
         while (_config.nums > 0)
         {
             digitalWrite(m_pin, HIGH);
-            delay(_config.internal);
+            m_conVar.wait_until(_lock,std::chrono::system_clock::now()+std::chrono::milliseconds(_config.playInternal));
             digitalWrite(m_pin, LOW);
-            delay(_config.internal);
+            m_conVar.wait_until(_lock,std::chrono::system_clock::now()+std::chrono::milliseconds(_config.stopInternal));
             _config.nums--;
         }
     }
