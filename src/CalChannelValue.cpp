@@ -2,6 +2,7 @@
 #define __CALCHANNELVALUE_H__
 
 #include "CalChannelValue.h"
+#include "Arduino.h"
 
 CalChannelValue::CalChannelValue()
 {
@@ -39,7 +40,7 @@ void CalChannelValue::quitInit()
     m_initOnlyOnce = true;
 }
 
-double CalChannelValue::rangLimit(double value)
+float CalChannelValue::rangLimit(float value)
 {
     if (value < 0)
     {
@@ -57,16 +58,16 @@ void CalChannelValue::freshCtrlValue(int16_t value1, int16_t value2, int16_t val
 {
     OneCtrlValue _cvalue = m_initValue[m_CtrlValueName_1];
     OneCtrlValue _hIvalue_L = m_initValue[m_CtrlValueName_2];
-    m_channleValue_1 = double(value1 - _cvalue.min) / double(_cvalue.max);
+    m_channleValue_1 = map(value1,_cvalue.min,_cvalue.max,0,100);
 
     if (value2 > _hIvalue_L.init)
     {
-        double _hPro = rangLimit(double(value2 - _hIvalue_L.init) / double(_hIvalue_L.max - _hIvalue_L.init));
+        float _hPro = rangLimit(float(value2 - _hIvalue_L.init) / float(_hIvalue_L.max - _hIvalue_L.init));
         m_channleValue_2 = _hPro * 90.0 + 90;
     }
     else if (value2 < _hIvalue_L.init)
     {
-        double _hPro = rangLimit(double(_hIvalue_L.init - value2) / double(_hIvalue_L.init));
+        float _hPro = rangLimit(float(_hIvalue_L.init - value2) / float(_hIvalue_L.init));
         m_channleValue_2 = 90 - _hPro * 90.0;
     }
     else
@@ -81,11 +82,11 @@ void CalChannelValue::freshCtrlValue(int16_t value1, int16_t value2, int16_t val
 
     if (_vValue > _vIValue.init)
     {
-        double _vPro = rangLimit(double(_vValue - _vIValue.init) / double(_vIValue.max - _vIValue.init));
+        float _vPro = rangLimit(float(_vValue - _vIValue.init) / float(_vIValue.max - _vIValue.init));
 
         if (_hValue > _hIvalue.init)
         {
-            double _hPro = rangLimit(double(_hValue - _hIvalue.init) / double(_hIvalue.max - _hIvalue.init));
+            float _hPro = rangLimit(float(_hValue - _hIvalue.init) / float(_hIvalue.max - _hIvalue.init));
             if (_vPro < _hPro)
             {
                 m_channleValue_3 = _hPro * 90.0 + 90;
@@ -98,7 +99,7 @@ void CalChannelValue::freshCtrlValue(int16_t value1, int16_t value2, int16_t val
         }
         else if (_hValue < _hIvalue.init)
         {
-            double _hPro = rangLimit(double(_hIvalue.init - _hValue) / double(_hIvalue.init));
+            float _hPro = rangLimit(float(_hIvalue.init - _hValue) / float(_hIvalue.init));
             if (_vPro < _hPro)
             {
                 m_channleValue_3 = 90 - _hPro * 90.0;
@@ -116,10 +117,10 @@ void CalChannelValue::freshCtrlValue(int16_t value1, int16_t value2, int16_t val
     }
     else if (_vValue < _vIValue.init)
     {
-        double _vPro = rangLimit(double(_vIValue.init - _vValue) / double(_vIValue.init));
+        float _vPro = rangLimit(float(_vIValue.init - _vValue) / float(_vIValue.init));
         if (_hValue > _hIvalue.init)
         {
-            double _hPro = rangLimit(double(_hValue - _hIvalue.init) / double(_hIvalue.max - _hIvalue.init));
+            float _hPro = rangLimit(float(_hValue - _hIvalue.init) / float(_hIvalue.max - _hIvalue.init));
             if (_vPro < _hPro)
             {
                 m_channleValue_3 = _hPro * 90.0 + 90;
@@ -132,7 +133,7 @@ void CalChannelValue::freshCtrlValue(int16_t value1, int16_t value2, int16_t val
         }
         else if (_hValue < _hIvalue.init)
         {
-            double _hPro = rangLimit(double(_vIValue.init - _hValue) / double(_hIvalue.init));
+            float _hPro = rangLimit(float(_vIValue.init - _hValue) / float(_hIvalue.init));
             if (_vPro < _hPro)
             {
                 m_channleValue_3 = 90 - _hPro * 90.0;
@@ -152,13 +153,13 @@ void CalChannelValue::freshCtrlValue(int16_t value1, int16_t value2, int16_t val
     {
         if (_hValue > _hIvalue.init)
         {
-            double _hPro = rangLimit(double(_hValue - _hIvalue.init) / double(_hIvalue.max - _hIvalue.init));
+            float _hPro = rangLimit(float(_hValue - _hIvalue.init) / float(_hIvalue.max - _hIvalue.init));
             m_channleValue_3 = _hPro * 90.0 + 90;
             m_channleValue_4 = 90 - _hPro * 90.0;
         }
         else if (_hValue < _hIvalue.init)
         {
-            double _hPro = rangLimit(double(_hIvalue.init - _hValue) / double(_hIvalue.init));
+            float _hPro = rangLimit(float(_hIvalue.init - _hValue) / float(_hIvalue.init));
             m_channleValue_3 = 90 - _hPro * 90.0;
             m_channleValue_4 = _hPro * 90.0 + 90;
         }
@@ -169,23 +170,23 @@ void CalChannelValue::freshCtrlValue(int16_t value1, int16_t value2, int16_t val
     }
 }
 
-double CalChannelValue::getChannelValue_1()
+float CalChannelValue::getChannelValue_1()
 {
     return m_channleValue_1;
 }
 
-double CalChannelValue::getChannelValue_2()
+float CalChannelValue::getChannelValue_2()
 {
     return m_channleValue_2;
 }
 
-double CalChannelValue::getChannelValue_3()
+float CalChannelValue::getChannelValue_3()
 {
     //
     return m_channleValue_3;
 }
 
-double CalChannelValue::getChannelValue_4()
+float CalChannelValue::getChannelValue_4()
 {
     return m_channleValue_4;
 }

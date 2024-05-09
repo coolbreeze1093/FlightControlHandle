@@ -4,6 +4,10 @@
 #include "GetCtrlValue.h"
 #include "ArduinoJson.h"
 #include "SbcInterface.h"
+#include "OledMang.h"
+#include "PowerCalculation.h"
+#include "common.h"
+
 
 class sbc :public SbcInterface
 {
@@ -17,8 +21,11 @@ private:
     bool m_revCloseValueR=true;
     bool m_revHardCtrlValueR=true;
     clock_t m_hearBeatTime;
+    clock_t m_VolWarning;
     BeeperCtrl *m_beeper=nullptr;
-    
+    OledMang*m_oled=nullptr;
+    PowerCalculation*m_PowerCalculation=nullptr;
+    SbcStatus m_status;
 private:
     void outInitValue();
     void pong() override;
@@ -37,6 +44,6 @@ public:
     void OnDataSent(esp_now_send_status_t status)override final;
     void OnDataRecv(const uint8_t *data, int data_len)override final;
 
-    
-    
+    void setOled(OledMang*oled);
+    void setPowerCalculation(PowerCalculation*c);
 };

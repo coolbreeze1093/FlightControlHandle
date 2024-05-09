@@ -27,16 +27,16 @@ public:
     void initCtrlValue(int16_t value1,int16_t value2,int16_t value3,int16_t value4);
     void quitInit();
     void freshCtrlValue(int16_t value1,int16_t value2,int16_t value3,int16_t value4);
-    double getChannelValue_1();
-    double getChannelValue_2();
-    double getChannelValue_3();
-    double getChannelValue_4();
+    float getChannelValue_1();
+    float getChannelValue_2();
+    float getChannelValue_3();
+    float getChannelValue_4();
 
     void initChannleValue();
 
     std::unordered_map<std::string,OneCtrlValue>&getInitValue(){return m_initValue;}
 private:
-    double rangLimit(double value);
+    float rangLimit(float value);
 
 private:
     std::unordered_map<std::string,OneCtrlValue> m_initValue;

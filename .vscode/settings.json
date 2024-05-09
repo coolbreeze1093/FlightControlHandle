@@ -55,7 +55,8 @@
         "ostream": "cpp",
         "stdexcept": "cpp",
         "thread": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "list": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled",
     "idf.portWin": "COM3"

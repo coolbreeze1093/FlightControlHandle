@@ -54,6 +54,10 @@ void BeeperCtrl::stop()
 void BeeperCtrl::addBeeperTask(BeeperCtrl::BeeperConfig &task)
 {
     std::unique_lock<std::mutex> _lock(m_mutex);
+    if(m_taskVector.size()>3)
+    {
+        m_taskVector.pop();
+    }
     m_taskVector.push(task);
     m_conVar.notify_all();
 }

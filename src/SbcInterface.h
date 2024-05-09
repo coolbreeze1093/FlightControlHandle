@@ -20,7 +20,6 @@ private:
     
 protected:
     ConnectState m_connectState = ConnectState::disconnect;
-    int m_clientVolatiol=0;
 protected:
     virtual void pong(){};
 
@@ -40,6 +39,4 @@ public:
     virtual void ping(){};
 
     ConnectState getConnectState(){return m_connectState;};
-
-    int getClientVolatiol(){return m_clientVolatiol;};
 };

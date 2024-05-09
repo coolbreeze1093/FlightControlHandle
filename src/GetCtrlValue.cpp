@@ -1,84 +1,56 @@
 #include <Arduino.h>
 #include "GetCtrlValue.h"
+#include "esp_wifi.h"
+#include "driver/adc.h"
 
-GetCtrlValue::GetCtrlValue()
-{
-}
+GetCtrlValue::GetCtrlValue():m_Throttle(ThrottleButton,FilterSize,Threshold)
+,m_HorizenDirectionValueL(HorizenDirectionButtonL,FilterSize,Threshold)
+,m_VerticalDirectionValue(VerticalDirectionButton,FilterSize,Threshold)
+,m_HorizenDirectionValueR(HorizenDirectionButtonR,FilterSize,Threshold)
+{}
+
 GetCtrlValue::~GetCtrlValue()
 {
 }
 int16_t GetCtrlValue::ThrottleValue()
 {
-  int16_t _ThrottleValue = analogRead(ThrottleButton);
-  if (abs(_ThrottleValue - m_lastThrottleValue) > 20 ||
-      (_ThrottleValue == 0 && _ThrottleValue != m_lastThrottleValue) ||
-      (_ThrottleValue == 0x0FFF && _ThrottleValue != m_lastThrottleValue))
-  {
-    m_lastThrottleValue = _ThrottleValue;
-  }
-
-  return m_lastThrottleValue;
+  return m_Throttle.update();
 }
 int16_t GetCtrlValue::HorizenDirectionValueL()
 {
-  int16_t _HorizenDirectionLValue = analogRead(HorizenDirectionButtonL);
-  if (abs(_HorizenDirectionLValue - m_lastHorizenDirectionValueL) > 20 ||
-      (_HorizenDirectionLValue == 0 && _HorizenDirectionLValue != m_lastHorizenDirectionValueL) ||
-      (_HorizenDirectionLValue == 0x0FFF && _HorizenDirectionLValue != m_lastHorizenDirectionValueL))
-  {
-    m_lastHorizenDirectionValueL = _HorizenDirectionLValue;
-  }
-  return m_lastHorizenDirectionValueL;
+  return m_HorizenDirectionValueL.update();
 }
 int16_t GetCtrlValue::VerticalDirectionValue()
 {
-  int16_t _VerticalDirectionValue = analogRead(VerticalDirectionButton);
-  if (abs(_VerticalDirectionValue - m_lastVerticalDirectionValue) > 20 ||
-      (_VerticalDirectionValue == 0 && _VerticalDirectionValue != m_lastVerticalDirectionValue) ||
-      (_VerticalDirectionValue == 0x0FFF && _VerticalDirectionValue != m_lastVerticalDirectionValue))
-  {
-    m_lastVerticalDirectionValue = _VerticalDirectionValue;
-  }
-  return m_lastVerticalDirectionValue;
+  return m_VerticalDirectionValue.update();
 }
 int16_t GetCtrlValue::HorizenDirectionValueR()
 {
-  int16_t _HorizenDirectionRValue = analogRead(HorizenDirectionButtonR);
-  if (abs(_HorizenDirectionRValue - m_lastHorizenDirectionValueR) > 20 ||
-      (_HorizenDirectionRValue == 0 && _HorizenDirectionRValue != m_lastHorizenDirectionValueR) ||
-      (_HorizenDirectionRValue == 0x0FFF && _HorizenDirectionRValue != m_lastHorizenDirectionValueR))
-  {
-    m_lastHorizenDirectionValueR = _HorizenDirectionRValue;
-  }
-  return m_lastHorizenDirectionValueR;
+  return m_HorizenDirectionValueR.update();
 }
 
 int16_t GetCtrlValue::ThrottleInitValue()
 {
   int16_t _ThrottleValue = analogRead(ThrottleButton);
-  m_lastThrottleValue = _ThrottleValue;
-  return m_lastThrottleValue;
+  return _ThrottleValue;
 }
 
 int16_t GetCtrlValue::HorizenDirectionInitValueL()
 {
   int16_t _HorizenDirectionLValue = analogRead(HorizenDirectionButtonL);
-  m_lastHorizenDirectionValueL = _HorizenDirectionLValue;
-  return m_lastHorizenDirectionValueL;
+  return _HorizenDirectionLValue;
 }
 
 int16_t GetCtrlValue::VerticalDirectionInitValue()
 {
   int16_t _VerticalDirectionValue = analogRead(VerticalDirectionButton);
-  m_lastVerticalDirectionValue = _VerticalDirectionValue;
-  return m_lastVerticalDirectionValue;
+  return _VerticalDirectionValue;
 }
 
 int16_t GetCtrlValue::HorizenDirectionInitValueR()
 {
   int16_t _HorizenDirectionRValue = analogRead(HorizenDirectionButtonR);
-  m_lastHorizenDirectionValueR = _HorizenDirectionRValue;
-  return m_lastHorizenDirectionValueR;
+  return _HorizenDirectionRValue;
 }
 GetCtrlValue::CtrlType GetCtrlValue::CtrlValue()
 {
@@ -92,7 +64,7 @@ GetCtrlValue::CtrlType GetCtrlValue::CtrlValue()
   {
     return CtrlType::open;
   }
-  else if (_CtrlValue > 800&& _CtrlValue < 1300)
+  else if (_CtrlValue > 800 && _CtrlValue < 1300)
   {
     return CtrlType::close;
   }

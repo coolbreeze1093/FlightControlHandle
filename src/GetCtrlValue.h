@@ -1,5 +1,6 @@
 #ifndef CALCTRLVALUE
 #define CALCTRLVALUE
+#include "OneADCValue.h"
 
 class GetCtrlValue
 {
@@ -27,16 +28,18 @@ public:
     CtrlType CtrlValue();
 
 private: 
-    int16_t m_lastThrottleValue = 0;
-    int16_t m_lastHorizenDirectionValueL = 0;
-    int16_t m_lastVerticalDirectionValue = 0;
-    int16_t m_lastHorizenDirectionValueR = 0;
-
     // 定义模拟输入引脚
     const uint8_t ThrottleButton = 39; 
     const uint8_t HorizenDirectionButtonL = 36; 
     const uint8_t VerticalDirectionButton = 34; 
     const uint8_t HorizenDirectionButtonR = 35; 
+    const uint8_t FilterSize=15;
+    const uint8_t Threshold=8;
+
+    OneADCValue m_Throttle;
+    OneADCValue m_HorizenDirectionValueL;
+    OneADCValue m_VerticalDirectionValue;
+    OneADCValue m_HorizenDirectionValueR;
 };
 
 
