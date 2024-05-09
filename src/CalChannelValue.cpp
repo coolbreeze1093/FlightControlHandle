@@ -54,11 +54,31 @@ float CalChannelValue::rangLimit(float value)
     return value;
 }
 
-void CalChannelValue::freshCtrlValue(int16_t value1, int16_t value2, int16_t value3, int16_t value4)
+void CalChannelValue::diffSpeed(int16_t value1, int16_t value2, int16_t value3, int16_t value4)
+{
+    OneCtrlValue _cvalue = m_initValue[m_CtrlValueName_1];
+    OneCtrlValue _hIvalue_R = m_initValue[m_CtrlValueName_3];
+
+    m_channleValue_1 = m_channleValue_2 = map(value1, _cvalue.min, _cvalue.max, 0, 100);
+    if (value3 > _hIvalue_R.init)
+    {
+        float _hPro = rangLimit(float(value3 - _hIvalue_R.init) / float(_hIvalue_R.max - _hIvalue_R.init));
+        m_channleValue_1 = m_channleValue_1 * (1 - _hPro * 0.1);
+    }
+    else if (value3 < _hIvalue_R.init)
+    {
+        float _hPro = rangLimit(float(_hIvalue_R.init - value3) / float(_hIvalue_R.init));
+        m_channleValue_2 = m_channleValue_2 * (1 - _hPro * 0.1);
+    }
+
+    m_channleValue_3 = m_channleValue_4 = 0;
+}
+
+void CalChannelValue::Mixing(int16_t value1, int16_t value2, int16_t value3, int16_t value4)
 {
     OneCtrlValue _cvalue = m_initValue[m_CtrlValueName_1];
     OneCtrlValue _hIvalue_L = m_initValue[m_CtrlValueName_2];
-    m_channleValue_1 = map(value1,_cvalue.min,_cvalue.max,0,100);
+    m_channleValue_1 = map(value1, _cvalue.min, _cvalue.max, 0, 100);
 
     if (value2 > _hIvalue_L.init)
     {
@@ -170,6 +190,11 @@ void CalChannelValue::freshCtrlValue(int16_t value1, int16_t value2, int16_t val
     }
 }
 
+void CalChannelValue::freshCtrlValue(int16_t value1, int16_t value2, int16_t value3, int16_t value4)
+{
+    diffSpeed(value1, value2, value3, value4);
+}
+
 float CalChannelValue::getChannelValue_1()
 {
     return m_channleValue_1;
@@ -194,7 +219,7 @@ float CalChannelValue::getChannelValue_4()
 void CalChannelValue::initChannleValue()
 {
     m_channleValue_1 = 0;
-    m_channleValue_2 = 90;
+    m_channleValue_2 = 0;
     m_channleValue_3 = 90;
     m_channleValue_4 = 90;
 }

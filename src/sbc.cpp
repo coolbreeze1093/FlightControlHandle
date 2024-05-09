@@ -41,7 +41,7 @@ void sbc::run()
         {
         }
         sendCtrlMsg(_cType);
-        if (m_beeper && (m_status.m_masterVol <= 30 || m_status.m_slaveVol <= 30) && clock() - m_VolWarning > 1000)
+        if (m_beeper && (m_status.m_masterVol <= 30 || m_status.m_slaveVol <= 30) && clock() - m_VolWarning > 1000&&m_lastCtrlType==GetCtrlValue::CtrlType::open)
         {
             m_VolWarning = clock();
             BeeperCtrl::BeeperConfig _task;
