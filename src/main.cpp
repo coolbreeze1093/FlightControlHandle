@@ -31,7 +31,7 @@ void setup()
       Serial.println("success EspNewMan_H init");
     }
   }
-  m_sbcthread.start(10);
+  m_sbcthread.start(30);
 }
 
 void loop()

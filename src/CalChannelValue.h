@@ -39,6 +39,7 @@ private:
     float rangLimit(float value);
     void diffSpeed(int16_t value1, int16_t value2, int16_t value3, int16_t value4);
     void Mixing(int16_t value1, int16_t value2, int16_t value3, int16_t value4);
+    void common(int16_t value1, int16_t value2, int16_t value3, int16_t value4);
 private:
     std::unordered_map<std::string,OneCtrlValue> m_initValue;
     std::unordered_map<std::string,int16_t> m_normalValue;

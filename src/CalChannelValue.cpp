@@ -54,6 +54,59 @@ float CalChannelValue::rangLimit(float value)
     return value;
 }
 
+void CalChannelValue::common(int16_t value1, int16_t value2, int16_t value3, int16_t value4)
+{
+    OneCtrlValue _cvalue = m_initValue[m_CtrlValueName_1];
+    OneCtrlValue _hIvalue_L = m_initValue[m_CtrlValueName_2];
+    m_channleValue_1 = map(value1, _cvalue.min, _cvalue.max, 0, 100);
+
+    if (value2 > _hIvalue_L.init)
+    {
+        float _hPro = rangLimit(float(value2 - _hIvalue_L.init) / float(_hIvalue_L.max - _hIvalue_L.init));
+        m_channleValue_2 = _hPro * 90.0 + 90;
+    }
+    else if (value2 < _hIvalue_L.init)
+    {
+        float _hPro = rangLimit(float(_hIvalue_L.init - value2) / float(_hIvalue_L.init));
+        m_channleValue_2 = 90 - _hPro * 90.0;
+    }
+    else
+    {
+        m_channleValue_2 = 90;
+    }
+    OneCtrlValue _VIvalue_R = m_initValue[m_CtrlValueName_3];
+    if (value3 > _VIvalue_R.init)
+    {
+        float _hPro = rangLimit(float(value3 - _VIvalue_R.init) / float(_VIvalue_R.max - _VIvalue_R.init));
+        m_channleValue_3 = _hPro * 90.0 + 90;
+    }
+    else if (value3 < _VIvalue_R.init)
+    {
+        float _hPro = rangLimit(float(_VIvalue_R.init - value3) / float(_VIvalue_R.init));
+        m_channleValue_3 = 90 - _hPro * 90.0;
+    }
+    else
+    {
+        m_channleValue_3 = 90;
+    }
+
+    OneCtrlValue _hIvalue_R = m_initValue[m_CtrlValueName_4];
+    if (value4 > _hIvalue_R.init)
+    {
+        float _hPro = rangLimit(float(value4 - _hIvalue_R.init) / float(_hIvalue_R.max - _hIvalue_R.init));
+        m_channleValue_4 = _hPro * 90.0 + 90;
+    }
+    else if (value4 < _hIvalue_R.init)
+    {
+        float _hPro = rangLimit(float(_hIvalue_R.init - value4) / float(_hIvalue_R.init));
+        m_channleValue_4 = 90 - _hPro * 90.0;
+    }
+    else
+    {
+        m_channleValue_4 = 90;
+    }
+}
+
 void CalChannelValue::diffSpeed(int16_t value1, int16_t value2, int16_t value3, int16_t value4)
 {
     OneCtrlValue _cvalue = m_initValue[m_CtrlValueName_1];
@@ -222,7 +275,7 @@ void CalChannelValue::Mixing(int16_t value1, int16_t value2, int16_t value3, int
 
 void CalChannelValue::freshCtrlValue(int16_t value1, int16_t value2, int16_t value3, int16_t value4)
 {
-    diffSpeed(value1, value2, value3, value4);
+    common(value1, value2, value3, value4);
 }
 
 float CalChannelValue::getChannelValue_1()
