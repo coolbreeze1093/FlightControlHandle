@@ -16,12 +16,6 @@ private:
     GetCtrlValue* m_getV=nullptr;
     bool OnlyDebugOnceInitValue = true;
     GetCtrlValue::CtrlType m_lastCtrlType=GetCtrlValue::CtrlType::error;
-    bool m_revInitValueR=true;
-    bool m_revOpenValueR=true;
-    bool m_revCloseValueR=true;
-    bool m_revHardCtrlValueR=true;
-    clock_t m_hearBeatTime;
-    clock_t m_VolWarning;
     BeeperCtrl *m_beeper=nullptr;
     OledMang*m_oled=nullptr;
     PowerCalculation*m_PowerCalculation=nullptr;

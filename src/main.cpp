@@ -37,5 +37,5 @@ void setup()
 void loop()
 {
   m_oled.run();
-  delay(10);
+  delay(30);
 }

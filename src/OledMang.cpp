@@ -24,46 +24,28 @@ void OledMang::run()
     do
     {
         u8g2.setCursor(0, 12);
-        u8g2.print("连接状态:");
-        u8g2.setCursor(70, 12);
-        switch (m_sbcStatusForShow.m_conState)
-        {
-        case SbcInterface::ConnectState::connected:
-            u8g2.print("已连接");
-            break;
-        case SbcInterface::ConnectState::disconnect:
-            u8g2.print("连接中断");
-            break;
-        case SbcInterface::ConnectState::connectting:
-            u8g2.print("正在连接");
-            break;
-        default:
-            break;
-        }
-
-        u8g2.setCursor(0, 25);
         u8g2.print("遥控器电量:");
-        u8g2.setCursor(70, 25);
+        u8g2.setCursor(70, 12);
         u8g2.print(std::to_string(m_sbcStatusForShow.m_masterVol).c_str());
-        u8g2.setCursor(0, 38);
+        u8g2.setCursor(0, 25);
         u8g2.print("接收机电量:");
-        u8g2.setCursor(70, 38);
+        u8g2.setCursor(70, 25);
         u8g2.print(std::to_string(m_sbcStatusForShow.m_slaveVol).c_str());
-        u8g2.setCursor(0, 51);
+        u8g2.setCursor(0, 38);
         u8g2.print("通道1:");
-        u8g2.setCursor(35, 51);
+        u8g2.setCursor(35, 38);
         u8g2.print(to_string_with_precision<float>(m_sbcStatusForShow.m_channel1,2).c_str());
-        u8g2.setCursor(64, 51);
+        u8g2.setCursor(64, 38);
         u8g2.print("通道2:");
-        u8g2.setCursor(99, 51);
+        u8g2.setCursor(99, 38);
         u8g2.print(to_string_with_precision<float>(m_sbcStatusForShow.m_channel2,1).c_str());
-        u8g2.setCursor(0, 63);
+        u8g2.setCursor(0, 51);
         u8g2.print("通道3:");
-        u8g2.setCursor(35, 63);
+        u8g2.setCursor(35, 51);
         u8g2.print(to_string_with_precision<float>(m_sbcStatusForShow.m_channel3,1).c_str());
-        u8g2.setCursor(64, 63);
+        u8g2.setCursor(64, 51);
         u8g2.print("通道4:");
-        u8g2.setCursor(99, 63);
+        u8g2.setCursor(99, 51);
         u8g2.print(to_string_with_precision<float>(m_sbcStatusForShow.m_channel4,1).c_str());
     } while (u8g2.nextPage());
 }
