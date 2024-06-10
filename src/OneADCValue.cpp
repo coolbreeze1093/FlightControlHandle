@@ -21,7 +21,7 @@ float OneADCValue::update()
   else{
     m_stableTimes=0;
   }
-  if(abs(_result-m_lastValue)>=m_threshold||m_stableTimes>50)
+  if(abs(_result-m_lastValue)>=m_threshold||m_stableTimes>10)
   {
     m_finalValue = _result;
   }

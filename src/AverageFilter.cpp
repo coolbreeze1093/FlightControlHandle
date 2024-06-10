@@ -1,5 +1,5 @@
 #include "AverageFilter.h"
-
+#include <numeric>
 AverageFilter::AverageFilter(int size):m_filterSize(size)
 {
 }
@@ -15,18 +15,10 @@ float AverageFilter::update(float value)
         m_valueVec.pop_back();
     }
     m_valueVec.insert(m_valueVec.begin(),value/1000);
-    
-    float _r=0;
-    
-    for (size_t i = 0; i < m_valueVec.size(); i++)
-    {
-        _r += m_valueVec.at(i);
-    }
-    
-    if(_r != 0)
-    {
-        _r /= m_valueVec.size();
-    }
 
-    return _r*1000;
+    float sum = std::accumulate(m_valueVec.begin(), m_valueVec.end(), 0.0);
+    
+    sum /= m_valueVec.size();
+
+    return sum*1000;
 }

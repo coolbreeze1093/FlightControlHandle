@@ -8,7 +8,9 @@ void BeeperCtrl::run()
         std::unique_lock<std::mutex> _lock(m_mutex);
         while (m_taskVector.empty())
         {
+            m_iswait=true;
             m_conVar.wait(_lock);
+            m_iswait=false;
         }
 
         BeeperConfig _config = m_taskVector.front();
@@ -59,5 +61,9 @@ void BeeperCtrl::addBeeperTask(BeeperCtrl::BeeperConfig &task)
         m_taskVector.pop();
     }
     m_taskVector.push(task);
-    m_conVar.notify_all();
+    if(m_iswait)
+    {
+        m_conVar.notify_all();
+    }
+    
 }

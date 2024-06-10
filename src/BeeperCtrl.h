@@ -23,6 +23,7 @@ private:
     void run();
     bool m_isRungning = false;
     int m_pin = 23;
+    bool m_iswait=false;
 
 public:
     BeeperCtrl(/* args */);

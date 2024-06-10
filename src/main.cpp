@@ -6,20 +6,26 @@
 #include "OledMang.h"
 #include "PowerCalculation.h"
 #include "WiFi.h"
+#include "BeeperCtrl.h"
 // C0:49:EF:B4:3A:30
 GetCtrlValue getV;
 CalChannelValue calC;
 WiFiUDP udp;
-char incomingPacket[255];  // buffer for incoming packets
+OledMang oled;
+PowerCalculation powerCal(33);
+BeeperCtrl beeper;
+
+char incomingPacket[255]; // buffer for incoming packets
 void setup()
 {
+  beeper.start();
   IPAddress _localIP, _gateway, _subnet, _dns;
-  _localIP.fromString("192.168.0.123");
+  _localIP.fromString("192.168.0.177");
   _gateway.fromString("192.168.0.1");
   _subnet.fromString("255.255.255.0");
-  _dns.fromString("192.168.1.1");
+  _dns.fromString("8.8.8.8");
   Serial.begin(115200);
-  WiFi.config(_localIP, _gateway, _subnet, _dns);
+  // WiFi.config(_localIP, _gateway, _subnet, _dns);
   wl_status_t _state = WiFi.begin("TP-LINK_5EDC", "dahuang456");
   Serial.print("WiFi.begin: ");
   Serial.println(int(_state));
@@ -27,11 +33,14 @@ void setup()
   {
     if (WiFi.isConnected())
     {
+      Serial.println("connectted");
       udp.begin(5566);
       break;
     }
-    else{
+    else
+    {
       delay(1000);
+      Serial.println("connectting");
     }
   }
 }
@@ -50,31 +59,40 @@ void loop()
     }
     Serial.printf("UDP packet contents: %s\n", incomingPacket);
   }
-
   GetCtrlValue::CtrlType _cType = getV.CtrlValue();
-
   if (_cType == GetCtrlValue::CtrlType::init)
   {
     calC.initCtrlValue(getV.ThrottleInitValue(), getV.HorizenDirectionInitValueL(), getV.VerticalDirectionInitValue(), getV.HorizenDirectionInitValueR());
   }
   else if (_cType == GetCtrlValue::CtrlType::open)
   {
-    calC.freshCtrlValue(getV.ThrottleValue(), getV.HorizenDirectionValueL(), getV.VerticalDirectionValue(), getV.HorizenDirectionValueR());
-    JsonDocument _doc;
-    _doc["channel1"]=calC.getChannelValue_1();
-    _doc["channel2"]=calC.getChannelValue_2();
-    _doc["channel3"]=calC.getChannelValue_3();
-    _doc["channel4"]=calC.getChannelValue_4();
-
-    if (WiFi.isConnected())
+    bool _fcr = calC.freshCtrlValue(getV.ThrottleValue(), getV.HorizenDirectionValueL(), getV.VerticalDirectionValue(), getV.HorizenDirectionValueR());
+    if (WiFi.isConnected()&&_fcr)
     {
+      //Serial.println("freshCtrlValue");
+      JsonDocument _doc;
+      _doc["channel1"] = calC.getChannelValue_1();
+      _doc["channel2"] = calC.getChannelValue_2();
+      _doc["channel3"] = calC.getChannelValue_3();
+      _doc["channel4"] = calC.getChannelValue_4();
+
       String json;
       serializeJson(_doc, json);
-      udp.beginPacket("192.168.0.105",5566);
+      json = json + "*&*";
+      udp.beginPacket("255.255.255.255", 5566);
       udp.write((uint8_t *)json.c_str(), json.length());
       udp.endPacket();
     }
+
+    if (powerCal.getRemainPower() < 30)
+    {
+      BeeperCtrl::BeeperConfig task;
+      task.playInternal = 100;
+      task.stopInternal = 100;
+      task.nums = 2;
+      beeper.addBeeperTask(task);
+    }
   }
 
-  delay(10);
+  delay(2);
 }
