@@ -58,17 +58,16 @@ void CalChannelValue::common(int16_t value1, int16_t value2, int16_t value3, int
 {
     OneCtrlValue _cvalue = m_initValue[m_CtrlValueName_1];
     OneCtrlValue _hIvalue_L = m_initValue[m_CtrlValueName_2];
-    m_channleValue_1 = map(value1, _cvalue.min, _cvalue.max, 0, 100);
-
+    m_channleValue_1 = std::lround(map(value1, _cvalue.min, _cvalue.max, 0, 180));
     if (value2 > _hIvalue_L.init)
     {
         float _hPro = rangLimit(float(value2 - _hIvalue_L.init) / float(_hIvalue_L.max - _hIvalue_L.init));
-        m_channleValue_2 = _hPro * 90.0 + 90;
+        m_channleValue_2 = std::lround(_hPro * 90.0 + 90.0);
     }
     else if (value2 < _hIvalue_L.init)
     {
         float _hPro = rangLimit(float(_hIvalue_L.init - value2) / float(_hIvalue_L.init));
-        m_channleValue_2 = 90 - _hPro * 90.0;
+        m_channleValue_2 = std::lround(90.0 - _hPro * 90.0);
     }
     else
     {
@@ -78,12 +77,12 @@ void CalChannelValue::common(int16_t value1, int16_t value2, int16_t value3, int
     if (value3 > _VIvalue_R.init)
     {
         float _hPro = rangLimit(float(value3 - _VIvalue_R.init) / float(_VIvalue_R.max - _VIvalue_R.init));
-        m_channleValue_3 = _hPro * 90.0 + 90;
+        m_channleValue_3 = std::lround(_hPro * 90.0 + 90.0);
     }
     else if (value3 < _VIvalue_R.init)
     {
         float _hPro = rangLimit(float(_VIvalue_R.init - value3) / float(_VIvalue_R.init));
-        m_channleValue_3 = 90 - _hPro * 90.0;
+        m_channleValue_3 = std::lround(90.0 - _hPro * 90.0);
     }
     else
     {
@@ -94,12 +93,12 @@ void CalChannelValue::common(int16_t value1, int16_t value2, int16_t value3, int
     if (value4 > _hIvalue_R.init)
     {
         float _hPro = rangLimit(float(value4 - _hIvalue_R.init) / float(_hIvalue_R.max - _hIvalue_R.init));
-        m_channleValue_4 = _hPro * 90.0 + 90;
+        m_channleValue_4 = std::lround(_hPro * 90.0 + 90.0);
     }
     else if (value4 < _hIvalue_R.init)
     {
         float _hPro = rangLimit(float(_hIvalue_R.init - value4) / float(_hIvalue_R.init));
-        m_channleValue_4 = 90 - _hPro * 90.0;
+        m_channleValue_4 = std::lround(90.0 - _hPro * 90.0);
     }
     else
     {
@@ -273,9 +272,21 @@ void CalChannelValue::Mixing(int16_t value1, int16_t value2, int16_t value3, int
     }
 }
 
-void CalChannelValue::freshCtrlValue(int16_t value1, int16_t value2, int16_t value3, int16_t value4)
+bool CalChannelValue::freshCtrlValue(int16_t value1, int16_t value2, int16_t value3, int16_t value4)
 {
     common(value1, value2, value3, value4);
+    if(m_channleValue_1!=m_lastChannleValue_1||
+    m_channleValue_2!=m_lastChannleValue_2||
+    m_channleValue_3!=m_lastChannleValue_3||
+    m_channleValue_4!=m_lastChannleValue_4)
+    {
+        m_lastChannleValue_1=m_channleValue_1;
+        m_lastChannleValue_2=m_channleValue_2;
+        m_lastChannleValue_3=m_channleValue_3;
+        m_lastChannleValue_4=m_channleValue_4;
+        return true;
+    }
+    return false;
 }
 
 float CalChannelValue::getChannelValue_1()

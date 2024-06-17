@@ -59,5 +59,6 @@
         "list": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled",
-    "idf.portWin": "COM3"
+    "idf.portWin": "COM3",
+    "cmake.sourceDirectory": "C:/Users/Fearl/Documents/PlatformIO/Projects/ FlightControlHandle/.pio/libdeps/upesy_wroom/AsyncTCP"
 }

@@ -33,8 +33,8 @@ private:
     const uint8_t HorizenDirectionButtonL = 36; 
     const uint8_t VerticalDirectionButton = 34; 
     const uint8_t HorizenDirectionButtonR = 35; 
-    const uint8_t FilterSize=15;
-    const uint8_t Threshold=8;
+    const uint8_t FilterSize=20;
+    const uint8_t Threshold=1;
 
     OneADCValue m_Throttle;
     OneADCValue m_HorizenDirectionValueL;

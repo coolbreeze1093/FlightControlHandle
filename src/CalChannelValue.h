@@ -26,7 +26,7 @@ public:
     ~CalChannelValue();
     void initCtrlValue(int16_t value1,int16_t value2,int16_t value3,int16_t value4);
     void quitInit();
-    void freshCtrlValue(int16_t value1,int16_t value2,int16_t value3,int16_t value4);
+    bool freshCtrlValue(int16_t value1,int16_t value2,int16_t value3,int16_t value4);
     float getChannelValue_1();
     float getChannelValue_2();
     float getChannelValue_3();
@@ -51,8 +51,13 @@ private:
 
     bool m_initOnlyOnce=true;
 
-    double m_channleValue_1=0;//L
-    double m_channleValue_2=0;//L
-    double m_channleValue_3=0;//L
-    double m_channleValue_4=0;//R
+    int m_channleValue_1=0;//L
+    int m_channleValue_2=0;//L
+    int m_channleValue_3=0;//L
+    int m_channleValue_4=0;//R
+
+    int m_lastChannleValue_1=0;//L
+    int m_lastChannleValue_2=0;//L
+    int m_lastChannleValue_3=0;//L
+    int m_lastChannleValue_4=0;//R
 };

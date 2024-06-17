@@ -31,11 +31,11 @@ void setup()
       Serial.println("success EspNewMan_H init");
     }
   }
-  m_sbcthread.start(30);
+  m_sbcthread.start(2);
 }
 
 void loop()
 {
   m_oled.run();
-  delay(30);
+  delay(2);
 }
