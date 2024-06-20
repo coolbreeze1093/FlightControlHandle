@@ -3,6 +3,7 @@
 
 sbc::sbc(GetCtrlValue *getV, BeeperCtrl *beep) : m_getV(getV), m_beeper(beep)
 {
+    m_heartbeat = clock();
 }
 
 sbc::~sbc()
@@ -11,7 +12,6 @@ sbc::~sbc()
 
 void sbc::run()
 {
-
     GetCtrlValue::CtrlType _cType = m_getV->CtrlValue();
     if (m_lastCtrlType != _cType)
     {
@@ -25,6 +25,25 @@ void sbc::run()
     }
 
     sendCtrlMsg(_cType);
+    if ((clock() - m_heartbeat) >= 10000)
+    {
+        m_status.m_masterVol = m_PowerCalculation->getRemainPower();
+        if (m_beeper && m_status.m_masterVol <= 30 && m_lastCtrlType == GetCtrlValue::CtrlType::open)
+        {
+            BeeperCtrl::BeeperConfig _task;
+            _task.playInternal = 50;
+            _task.stopInternal = 50;
+            _task.nums = 3;
+            m_beeper->addBeeperTask(_task);
+        }
+
+        JsonDocument doc;
+        doc["volatile"] = 0;
+        String json;
+        serializeJson(doc, json);
+        EspNewMan_H.send(getMacAddr(), (uint8_t *)json.c_str(), json.length());
+        m_heartbeat = clock();
+    }
 
     m_lastCtrlType = _cType;
     if (m_oled)
@@ -45,33 +64,21 @@ void sbc::OnDataRecv(const uint8_t *data, int data_len)
 {
     JsonDocument doc;
     DeserializationError error = deserializeJson(doc, data);
-    // String _json(data,data_len);
-    // Serial.println(_json);
-    //  Test if parsing succeeds
     if (error)
     {
         Serial.print(F("deserializeJson() failed: "));
         Serial.println(error.f_str());
         return;
     }
-    if (doc.containsKey("InitValue"))
-    {
-        BeeperCtrl::BeeperConfig _task;
-        _task.playInternal = 1000;
-        _task.stopInternal = 100;
-        m_beeper->addBeeperTask(_task);
-    }
-
     if (doc.containsKey("volatile"))
     {
-        m_status.m_masterVol = m_PowerCalculation->getRemainPower();
         m_status.m_slaveVol = doc["volatile"].as<int>();
-        if (m_beeper && (m_status.m_masterVol <= 30 || m_status.m_slaveVol <= 30) && m_lastCtrlType == GetCtrlValue::CtrlType::open)
+        if (m_beeper && (m_status.m_slaveVol <= 30) && m_lastCtrlType == GetCtrlValue::CtrlType::open)
         {
             BeeperCtrl::BeeperConfig _task;
-            _task.playInternal = 100;
-            _task.stopInternal = 100;
-            _task.nums = 2;
+            _task.playInternal = 50;
+            _task.stopInternal = 50;
+            _task.nums = 3;
             m_beeper->addBeeperTask(_task);
         }
     }
@@ -148,52 +155,28 @@ void sbc::disconnect()
 void sbc::sendCtrlMsg(GetCtrlValue::CtrlType type)
 {
     JsonDocument doc;
-    bool _needSendValue = false;
-    if (m_lastCtrlType == GetCtrlValue::CtrlType::init && type == GetCtrlValue::CtrlType::close)
+    if (type == GetCtrlValue::CtrlType::open && m_lastCtrlType == GetCtrlValue::CtrlType::open)
     {
-        _needSendValue = true;
-        outInitValue();
-        calV.quitInit();
-        calV.initChannleValue();
-        m_status.m_channel1 = calV.getChannelValue_1();
-        m_status.m_channel2 = calV.getChannelValue_2();
-        m_status.m_channel3 = calV.getChannelValue_3();
-        m_status.m_channel4 = calV.getChannelValue_4();
-        JsonObject _obj = doc["InitValue"].to<JsonObject>();
-        _obj["channel1"] = m_status.m_channel1;
-        _obj["channel2"] = m_status.m_channel2;
-        _obj["channel3"] = m_status.m_channel3;
-        _obj["channel4"] = m_status.m_channel4;
-    }
-    else if (m_lastCtrlType == GetCtrlValue::CtrlType::open && type == GetCtrlValue::CtrlType::close)
-    {
-        _needSendValue = true;
-        doc["close"] = 0;
-    }
-    else if (type == GetCtrlValue::CtrlType::open && m_lastCtrlType == GetCtrlValue::CtrlType::close)
-    {
-        _needSendValue = true;
-        doc["open"] = 0;
-    }
-    else if (type == GetCtrlValue::CtrlType::open && m_lastCtrlType == GetCtrlValue::CtrlType::open)
-    {
-        _needSendValue = true;
-        calV.freshCtrlValue(m_getV->ThrottleValue(), m_getV->HorizenDirectionValueL(), m_getV->VerticalDirectionValue(), m_getV->HorizenDirectionValueR());
-        m_status.m_channel1 = calV.getChannelValue_1();
-        m_status.m_channel2 = calV.getChannelValue_2();
-        m_status.m_channel3 = calV.getChannelValue_3();
-        m_status.m_channel4 = calV.getChannelValue_4();
-        JsonObject _obj = doc["HardCtrl"].to<JsonObject>();
-        _obj["channel1"] = m_status.m_channel1;
-        _obj["channel2"] = m_status.m_channel2;
-        _obj["channel3"] = m_status.m_channel3;
-        _obj["channel4"] = m_status.m_channel4;
-    }
-    if (_needSendValue)
-    {
-        String json;
-        serializeJson(doc, json);
-        EspNewMan_H.send(getMacAddr(), (uint8_t *)json.c_str(), json.length());
+        
+        bool _r = calV.freshCtrlValue(m_getV->ThrottleValue(), m_getV->HorizenDirectionValueL(), m_getV->VerticalDirectionValue(), m_getV->HorizenDirectionValueR());
+        if (_r)
+        {
+            m_status.m_channel1 = calV.getChannelValue_1();
+            m_status.m_channel2 = calV.getChannelValue_2();
+            m_status.m_channel3 = calV.getChannelValue_3();
+            m_status.m_channel4 = calV.getChannelValue_4();
+            JsonObject _obj = doc["HardCtrl"].to<JsonObject>();
+            _obj["channel1"] = m_status.m_channel1;
+            _obj["channel2"] = m_status.m_channel2;
+            _obj["channel3"] = m_status.m_channel3;
+            _obj["channel4"] = m_status.m_channel4;
+
+            String json;
+            serializeJson(doc, json);
+            EspNewMan_H.send(getMacAddr(), (uint8_t *)json.c_str(), json.length());
+
+            Serial.println("send msg");
+        }
     }
 }
 

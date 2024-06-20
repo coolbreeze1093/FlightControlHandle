@@ -20,6 +20,7 @@ private:
     OledMang*m_oled=nullptr;
     PowerCalculation*m_PowerCalculation=nullptr;
     SbcStatus m_status;
+    clock_t m_heartbeat;
 private:
     void outInitValue();
     void pong() override;
