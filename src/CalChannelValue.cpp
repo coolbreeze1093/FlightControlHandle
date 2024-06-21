@@ -74,6 +74,7 @@ void CalChannelValue::common(int16_t value1, int16_t value2, int16_t value3, int
     {
         m_channleValue_2 = 90;
     }
+
     OneCtrlValue _VIvalue_R = m_initValue[m_CtrlValueName_3];
     if (value3 > _VIvalue_R.init)
     {
@@ -275,7 +276,37 @@ void CalChannelValue::Mixing(int16_t value1, int16_t value2, int16_t value3, int
 
 bool CalChannelValue::freshCtrlValue(int16_t value1, int16_t value2, int16_t value3, int16_t value4)
 {
+    //Serial.println("原始变量");
+    //Serial.print("value1：");
+    //Serial.println(value1);
+    //Serial.print("value2：");
+    //Serial.println(value2);
+    //Serial.print("value3：");
+    //Serial.println(value3);
+    //Serial.print("value4：");
+    //Serial.println(value4);
+    
     common(value1, value2, value3, value4);
+
+    //Serial.println("发送变量");
+    //Serial.print("m_channleValue_1 ");
+    //Serial.println(m_channleValue_1);
+    //Serial.print("m_channleValue_2 ");
+    //Serial.println(m_channleValue_2);
+    //Serial.print("m_channleValue_3 ");
+    //Serial.println(m_channleValue_3);
+    //Serial.print("m_channleValue_4 ");
+    //Serial.println(m_channleValue_4);
+//
+    //Serial.println("上次发送变量");
+    //Serial.print("m_lastChannleValue_1 ");
+    //Serial.println(m_lastChannleValue_1);
+    //Serial.print("m_lastChannleValue_2 ");
+    //Serial.println(m_lastChannleValue_2);
+    //Serial.print("m_lastChannleValue_3 ");
+    //Serial.println(m_lastChannleValue_3);
+    //Serial.print("m_lastChannleValue_4 ");
+    //Serial.println(m_lastChannleValue_4);
 
     if(m_channleValue_1!=m_lastChannleValue_1||
     m_channleValue_2!=m_lastChannleValue_2||
@@ -288,6 +319,7 @@ bool CalChannelValue::freshCtrlValue(int16_t value1, int16_t value2, int16_t val
         m_lastChannleValue_4=m_channleValue_4;
         return true;
     }
+    
     return false;
 }
 

@@ -43,6 +43,12 @@ void setup()
       Serial.println("connectting");
     }
   }
+
+  BeeperCtrl::BeeperConfig task;
+  task.playInternal = 100;
+  task.stopInternal = 50;
+  task.nums = 3;
+  beeper.addBeeperTask(task);
 }
 
 void loop()
@@ -80,18 +86,37 @@ void loop()
       serializeJson(_doc, json);
       json = json + "*&*";
       udp.beginPacket("255.255.255.255", 5566);
-      udp.write((uint8_t *)json.c_str(), json.length());
+      
+      size_t _sendSize = udp.write((uint8_t *)json.c_str(), json.length());
+      
+      //Serial.println("发送变量");
+      //Serial.print("calC.getChannelValue_1() ");
+      //Serial.println(calC.getChannelValue_1());
+      //Serial.print("calC.getChannelValue_2() ");
+      //Serial.println(calC.getChannelValue_2());
+      //Serial.print("calC.getChannelValue_3() ");
+      //Serial.println(calC.getChannelValue_3());
+      //Serial.print("calC.getChannelValue_4() ");
+      //Serial.println(calC.getChannelValue_4());
+      
       udp.endPacket();
     }
-
-    if (powerCal.getRemainPower() < 30)
-    {
-      BeeperCtrl::BeeperConfig task;
-      task.playInternal = 100;
-      task.stopInternal = 100;
-      task.nums = 2;
-      beeper.addBeeperTask(task);
-    }
+    //SbcStatus _status;
+    //_status.m_masterVol = powerCal.getRemainPower();
+    //_status.m_channel1 = calC.getChannelValue_1();
+    //_status.m_channel2 = calC.getChannelValue_2();
+    //_status.m_channel3 = calC.getChannelValue_3();
+    //_status.m_channel4 = calC.getChannelValue_4();
+    //oled.setSbcStatus(_status);
+    //oled.run();
+    //if (powerCal.getRemainPower() < 20);
+    //{
+    //  BeeperCtrl::BeeperConfig task;
+    //  task.playInternal = 100;
+    //  task.stopInternal = 100;
+    //  task.nums = 1;
+    //  beeper.addBeeperTask(task);
+    //}
   }
 
   delay(2);
